@@ -1,7 +1,7 @@
 import nl.astraeus.sqlite.ColumnType
 import nl.astraeus.sqlite.SQLite
 
-class Test(
+class Person(
   val name: String,
   val age: Int
 )
@@ -43,12 +43,17 @@ fun main(args: Array<String>) {
             INSERT INTO Person VALUES('Klaas', 65);
         """.trimIndent())
 
-            executeQuery(
+            val rs = executeQuery(
               "SELECT * FROM Person",
               arrayOf(ColumnType.STRING, ColumnType.INTEGER),
-              { data ->
-                  println("Found ${data[0]} - ${data[1]}")
-              })
+              { data -> Person(data[0] as String, data[1] as Int) }
+            )
+
+            while(rs.hasNext()) {
+                val person = rs.next()
+
+                println("Found ${person.name} - ${person.age}")
+            }
         }
     } finally {
         sqlite.close()

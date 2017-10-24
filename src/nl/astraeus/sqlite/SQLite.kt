@@ -3,8 +3,58 @@ package nl.astraeus.sqlite
 import kotlinx.cinterop.*
 import sqlite3.*
 
-class ResultSet {
+class ResultSet<T>(
+  val stmt: CPointerVar<sqlite3_stmt>,
+  val types: Array<ColumnType>,
+  val objectMapper: (data: Array<Any>) -> T
+) {
+    var done = false
+    var next: T? = null
 
+    fun hasNext(): Boolean {
+        if (done) {
+            return false
+        }
+
+        val rc = sqlite3_step(stmt.value)
+
+        if (rc == SQLITE_DONE) {
+            done = true
+            next = null
+
+            sqlite3_finalize(stmt.value)
+        } else if (rc == SQLITE_ROW) {
+            val row = Array<Any>(types.size, { "" })
+
+            for (index in 0 until types.size) {
+                when (types[index]) {
+                    ColumnType.STRING -> {
+                        row[index] = sqlite3_column_text(stmt.value, index)?.toKString() ?: SQLiteException("", -1)
+                    }
+                    ColumnType.INTEGER -> {
+                        row[index] = sqlite3_column_int(stmt.value, index)
+                    }
+                    else -> {
+                        row[index] = "Not implemented"
+                    }
+
+                }
+            }
+
+            next = objectMapper(row)
+        }
+
+        return rc == SQLITE_ROW
+    }
+
+    fun next(): T {
+        val result = next
+        if (done || result == null) {
+            throw SQLiteException("ResultSet empty!", -1)
+        } else {
+            return result
+        }
+    }
 }
 
 enum class ColumnType {
@@ -36,7 +86,7 @@ class Transaction(
         return 0
     }
 
-    fun executeQuery(
+/*    fun executeQuery(
       sql: String,
       types: Array<ColumnType>,
       resultMapper: (data: Array<Any>) -> Unit
@@ -80,27 +130,20 @@ class Transaction(
 
             sqlite3_finalize(stmt.value)
         }
-    }
+    }*/
 
-    fun executeQuery(sql: String): ResultSet {
+    fun <T> executeQuery(
+      sql: String,
+      types: Array<ColumnType>,
+      objectMapper: (data: Array<Any>) -> T
+    ): ResultSet<T> {
         memScoped {
             val stmt: CPointerVar<sqlite3_stmt> = alloc<CPointerVar<sqlite3_stmt>>()
-            var rc = sqlite3_prepare_v2(sqlite.db.value, sql, -1, stmt.ptr, null)
+            val rc = sqlite3_prepare_v2(sqlite.db.value, sql, -1, stmt.ptr, null)
 
             sqlite.checkResultCode(rc)
 
-            rc = sqlite3_step(stmt.value)
-
-            sqlite.checkResultCode(rc)
-
-            if (rc == SQLITE_ROW) {
-                val version = sqlite3_column_text(stmt.value, 0)?.toKString()
-                println("VERSION: $version")
-            }
-
-            sqlite3_finalize(stmt.value)
-
-            return ResultSet()
+            return ResultSet(stmt, types, objectMapper)
         }
     }
 }
