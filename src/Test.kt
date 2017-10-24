@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
     sqlite3_finalize(res.value)
     sqlite3_close(db.value)
 */
-    val sqlite = SQLite(":memory:")
+    val sqlite = SQLite("data/data.sqlite")
 
     try {
         sqlite.transaction {
