@@ -1,0 +1,5 @@
+headers = sqlite3.h
+compilerOpts = -D_POSIX_SOURCE
+linkerOpts = -L/usr/lib/x86_64-linux-gnu -lsqlite3
+excludedFunctions =
+compilerOpts.linux = -I/usr/include
