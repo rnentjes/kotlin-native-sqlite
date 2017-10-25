@@ -72,17 +72,22 @@ class Transaction(
   val sqlite: SQLite
 ) {
 
+    private fun begin() {
+
+    }
+
+    private fun commit() {
+
+    }
+
+    private fun rollback() {
+
+    }
+
     fun execute(sql: String) {
-        memScoped {
-            val stmt: CPointerVar<sqlite3_stmt> = alloc<CPointerVar<sqlite3_stmt>>()
-            val errorMsg: CPointerVar<ByteVar> = alloc()
+        val rc = sqlite3_exec(sqlite.db.value, sql, null, null, null)
 
-            val rc = sqlite3_exec(sqlite.db.value, sql, null, null, errorMsg.ptr)
-
-            sqlite.checkResultCode(rc)
-
-            sqlite3_finalize(stmt.value)
-        }
+        sqlite.checkResultCode(rc)
     }
 
     fun executeUpdate(sql: String): Int {

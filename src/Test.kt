@@ -37,11 +37,11 @@ fun main(args: Array<String>) {
     try {
         sqlite.transaction {
             execute("""
-            DROP TABLE IF EXISTS Person;
-            CREATE TABLE Person(name VARCHAR, age INT);
-            INSERT INTO Person VALUES('Piet', 22);
-            INSERT INTO Person VALUES('Klaas', 65);
-        """.trimIndent())
+                DROP TABLE IF EXISTS Person;
+                CREATE TABLE Person(name VARCHAR, age INT);
+                INSERT INTO Person VALUES('Piet', 22);
+                INSERT INTO Person VALUES('Klaas', 65);
+            """.trimIndent())
 
             val objectSet = executeQuery(
               "SELECT * FROM Person",
