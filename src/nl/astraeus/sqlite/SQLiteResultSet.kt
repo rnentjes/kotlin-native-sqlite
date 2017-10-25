@@ -4,6 +4,8 @@ import kotlinx.cinterop.CPointerVar
 import kotlinx.cinterop.toKString
 import kotlinx.cinterop.value
 import sqlite3.*
+import cnames.structs.sqlite3_stmt
+import kotlinx.cinterop.nativeHeap
 
 /**
  * User: rnentjes
@@ -28,6 +30,7 @@ class SQLiteResultSet(
             done = true
 
             sqlite3_finalize(stmt.value)
+            nativeHeap.free(stmt.rawPtr)
         }
 
         return rc == SQLITE_ROW

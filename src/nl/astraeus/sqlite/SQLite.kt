@@ -1,6 +1,8 @@
 package nl.astraeus.sqlite
 
 import kotlinx.cinterop.*
+import cnames.structs.sqlite3
+import cnames.structs.sqlite3_stmt
 import sqlite3.*
 
 class ObjectSet<T>(
@@ -23,6 +25,7 @@ class ObjectSet<T>(
             next = null
 
             sqlite3_finalize(stmt.value)
+            nativeHeap.free(stmt.rawPtr)
         } else if (rc == SQLITE_ROW) {
             val row = Array<Any>(types.size, { "" })
 
@@ -137,27 +140,23 @@ class Transaction(
       types: Array<ColumnType>,
       objectMapper: (data: Array<Any>) -> T
     ): ObjectSet<T> {
-        memScoped {
-            val stmt: CPointerVar<sqlite3_stmt> = alloc<CPointerVar<sqlite3_stmt>>()
-            val rc = sqlite3_prepare_v2(sqlite.db.value, sql, -1, stmt.ptr, null)
+        val stmt: CPointerVar<sqlite3_stmt> = nativeHeap.alloc<CPointerVar<sqlite3_stmt>>()
+        val rc = sqlite3_prepare_v2(sqlite.db.value, sql, -1, stmt.ptr, null)
 
-            sqlite.checkResultCode(rc)
+        sqlite.checkResultCode(rc)
 
-            return ObjectSet(stmt, types, objectMapper)
-        }
+        return ObjectSet(stmt, types, objectMapper)
     }
 
     fun executeQuery(
       sql: String
     ): SQLiteResultSet {
-        memScoped {
-            val stmt: CPointerVar<sqlite3_stmt> = alloc<CPointerVar<sqlite3_stmt>>()
-            val rc = sqlite3_prepare_v2(sqlite.db.value, sql, -1, stmt.ptr, null)
+        val stmt: CPointerVar<sqlite3_stmt> = nativeHeap.alloc<CPointerVar<sqlite3_stmt>>()
+        val rc = sqlite3_prepare_v2(sqlite.db.value, sql, -1, stmt.ptr, null)
 
-            sqlite.checkResultCode(rc)
+        sqlite.checkResultCode(rc)
 
-            return SQLiteResultSet(stmt)
-        }
+        return SQLiteResultSet(stmt)
     }
 }
 
