@@ -130,6 +130,11 @@
     </data-source>
   </component>
   <component name="libraryTable">
+    <library name="Flutter Plugins" type="FlutterPluginsLibraryType">
+      <CLASSES />
+      <JAVADOC />
+      <SOURCES />
+    </library>
     <library name="KotlinJavaRuntime">
       <CLASSES>
         <root url="jar://$KOTLIN_BUNDLED$/lib/kotlin-stdlib.jar!/" />

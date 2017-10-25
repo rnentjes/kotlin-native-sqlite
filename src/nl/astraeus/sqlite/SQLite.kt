@@ -3,7 +3,7 @@ package nl.astraeus.sqlite
 import kotlinx.cinterop.*
 import sqlite3.*
 
-class ResultSet<T>(
+class ObjectSet<T>(
   val stmt: CPointerVar<sqlite3_stmt>,
   val types: Array<ColumnType>,
   val objectMapper: (data: Array<Any>) -> T
@@ -29,7 +29,7 @@ class ResultSet<T>(
             for (index in 0 until types.size) {
                 when (types[index]) {
                     ColumnType.STRING -> {
-                        row[index] = sqlite3_column_text(stmt.value, index)?.toKString() ?: SQLiteException("", -1)
+                        row[index] = sqlite3_column_text(stmt.value, index)?.toKString() ?: throw SQLiteException("", -1)
                     }
                     ColumnType.INTEGER -> {
                         row[index] = sqlite3_column_int(stmt.value, index)
@@ -136,14 +136,27 @@ class Transaction(
       sql: String,
       types: Array<ColumnType>,
       objectMapper: (data: Array<Any>) -> T
-    ): ResultSet<T> {
+    ): ObjectSet<T> {
         memScoped {
             val stmt: CPointerVar<sqlite3_stmt> = alloc<CPointerVar<sqlite3_stmt>>()
             val rc = sqlite3_prepare_v2(sqlite.db.value, sql, -1, stmt.ptr, null)
 
             sqlite.checkResultCode(rc)
 
-            return ResultSet(stmt, types, objectMapper)
+            return ObjectSet(stmt, types, objectMapper)
+        }
+    }
+
+    fun executeQuery(
+      sql: String
+    ): SQLiteResultSet {
+        memScoped {
+            val stmt: CPointerVar<sqlite3_stmt> = alloc<CPointerVar<sqlite3_stmt>>()
+            val rc = sqlite3_prepare_v2(sqlite.db.value, sql, -1, stmt.ptr, null)
+
+            sqlite.checkResultCode(rc)
+
+            return SQLiteResultSet(stmt)
         }
     }
 }

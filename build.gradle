@@ -28,6 +28,8 @@ konanArtifacts {
         inputFiles project.fileTree('src')
 
         useInterop "sqlite3"
+
+        // enableDebug()
         // enableOptimization()
     }
 

@@ -43,16 +43,23 @@ fun main(args: Array<String>) {
             INSERT INTO Person VALUES('Klaas', 65);
         """.trimIndent())
 
-            val rs = executeQuery(
+            val objectSet = executeQuery(
               "SELECT * FROM Person",
-              arrayOf(ColumnType.STRING, ColumnType.INTEGER),
-              { data -> Person(data[0] as String, data[1] as Int) }
-            )
+              arrayOf(ColumnType.STRING, ColumnType.INTEGER)
+            ) { data ->
+                Person(data[0] as String, data[1] as Int)
+            }
 
-            while(rs.hasNext()) {
-                val person = rs.next()
+            while(objectSet.hasNext()) {
+                val person = objectSet.next()
 
                 println("Found ${person.name} - ${person.age}")
+            }
+
+            val resultSet = executeQuery("SELECT * FROM Person")
+
+            while(resultSet.next()) {
+                println("RS Found ${resultSet.getString(0)}, ${resultSet.getInt(1)}")
             }
         }
     } finally {
