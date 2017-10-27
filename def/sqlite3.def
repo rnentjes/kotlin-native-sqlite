@@ -1,5 +1,7 @@
 headers = sqlite3.h
 compilerOpts = -D_POSIX_SOURCE
-linkerOpts = -L/usr/lib/x86_64-linux-gnu -lsqlite3
-excludedFunctions = sqlite3_mutex_held sqlite3_mutex_notheld sqlite3_stmt_scanstatus sqlite3_stmt_scanstatus_reset sqlite3_snapshot_get sqlite3_snapshot_open sqlite3_snapshot_free
 compilerOpts.linux = -I/usr/include
+compilerOpts.windows = -Isqlite/
+linkerOpts.linux = -L/usr/lib/x86_64-linux-gnu -lsqlite3
+linkerOpts.windows = -Lsqlite/dll -lsqlite3
+excludedFunctions = sqlite3_mutex_held sqlite3_mutex_notheld sqlite3_stmt_scanstatus sqlite3_stmt_scanstatus_reset sqlite3_snapshot_get sqlite3_snapshot_open sqlite3_snapshot_free
